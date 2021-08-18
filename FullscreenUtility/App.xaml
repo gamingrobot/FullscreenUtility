@@ -1,0 +1,27 @@
+﻿<Application x:Class="FullscreenUtility.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:tb="http://www.hardcodet.net/taskbar"
+             ShutdownMode="OnExplicitShutdown"
+             Exit="OnExit"
+             Startup="OnStartup">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ContextMenu x:Shared="false" x:Key="SysTrayMenu">
+                <MenuItem Header="Turn Off Cursor Lock" Click="ToggleCursorLock" />
+                <MenuItem Header="Turn Off Mouse Transparency" Click="ToggleMouseTransparency" />
+                <Separator />
+                <MenuItem Header="Exit" Click="ExitOnClick" />
+            </ContextMenu>
+
+            <tb:TaskbarIcon x:Key="TrayIcon"
+                            Visibility="Visible"
+                            ToolTipText="Fullscreen Utility"
+                            IconSource="/assets/icon_white.ico"
+                            MenuActivation="LeftOrRightClick"
+                            ContextMenu="{StaticResource SysTrayMenu}"
+                            />
+        </ResourceDictionary>
+
+    </Application.Resources>
+</Application>
