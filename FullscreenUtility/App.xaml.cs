@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Controls;
 using Hardcodet.Wpf.TaskbarNotification;
+using NLog;
 
 namespace FullscreenUtility
 {
@@ -10,21 +12,33 @@ namespace FullscreenUtility
     public partial class App : Application
     {
 
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
         private readonly TaskbarIcon _trayIcon;
+
+        private CursorLockWatcher _cursorLockWatcher;
+        private MouseTransparencyWatcher _mouseTransparencyWatcher;
 
         public App()
         {
             InitializeComponent();
 
             _trayIcon = (TaskbarIcon)FindResource("TrayIcon");
+
+            SettingsState.MouseTransparencyEnabled = true;
+            SettingsState.CursorLockEnabled = true;
         }
 
-        private async void OnStartup(object sender, StartupEventArgs e)
+        protected override void OnStartup(StartupEventArgs e)
         {
+            _cursorLockWatcher = new CursorLockWatcher();
+            _mouseTransparencyWatcher = new MouseTransparencyWatcher();
+            base.OnStartup(e);
         }
 
-        private async void OnExit(object sender, ExitEventArgs e)
+        protected override void OnExit(ExitEventArgs e)
         {
+            _trayIcon.Dispose();
             base.OnExit(e);
         }
 
@@ -33,14 +47,26 @@ namespace FullscreenUtility
             Current.Shutdown();
         }
 
-        private void ToggleCursorLock(object sender, RoutedEventArgs e)
+        private void CursorLockOnClick(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            var item = (MenuItem) e.OriginalSource;
+            SettingsState.CursorLockEnabled = !SettingsState.CursorLockEnabled;
+            item.Header = GetStatusText(SettingsState.CursorLockEnabled, "Cursor Lock");
         }
 
-        private void ToggleMouseTransparency(object sender, RoutedEventArgs e)
+        private void MouseTransparencyOnClick(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            var item = (MenuItem)e.OriginalSource;
+            SettingsState.MouseTransparencyEnabled = !SettingsState.MouseTransparencyEnabled;
+            item.Header = GetStatusText(SettingsState.MouseTransparencyEnabled, "Mouse Transparency");
         }
+
+        private string GetStatusText(bool state, string tail)
+        {
+            var statusText = state ? "off" : "on";
+            return $"Turn {statusText} {tail}";
+        }
+
+
     }
 }
