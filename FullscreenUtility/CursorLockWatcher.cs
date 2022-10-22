@@ -21,11 +21,6 @@ namespace FullscreenUtility
 
         private static void CheckTask(object state)
         {
-            if (!SettingsState.CursorLockEnabled)
-            {
-                return;
-            }
-
             //Cleaned up version of https://github.com/blaberry/FullscreenLock/blob/master/FullscreenLock/Checker.cs
             var desktopHandle = NativeMethods.GetDesktopWindow();
             NativeMethods.GetWindowRect(desktopHandle, out var desktopBounds);
@@ -49,14 +44,20 @@ namespace FullscreenUtility
                 Logger.Trace($"DesktopBounds {desktopBoundsHeight} {desktopBoundsWidth}");
                 if (appBoundsHeight == desktopBoundsHeight && appBoundsWidth == desktopBoundsWidth)
                 {
-                    Logger.Info($"Restricting cursor on {processName}");
-                    SettingsState.CursorCurrentlyLocked = true;
-                    NativeMethods.ClipCursor(ref appBounds);
+                    SettingsState.FullscreenAppFocused = true;
+                    if (SettingsState.CursorLockEnabled)
+                    {
+                        Logger.Info($"Restricting cursor on {processName}");
+                        NativeMethods.ClipCursor(ref appBounds);
+                    }
                 }
                 else
                 {
-                    SettingsState.CursorCurrentlyLocked = false;
-                    NativeMethods.ClipCursor(IntPtr.Zero);
+                    SettingsState.FullscreenAppFocused = false;
+                    if (SettingsState.CursorLockEnabled)
+                    {
+                        NativeMethods.ClipCursor(IntPtr.Zero);
+                    }
                 }
             }
         }

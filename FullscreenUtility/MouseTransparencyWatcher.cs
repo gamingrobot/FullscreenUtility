@@ -58,7 +58,7 @@ namespace FullscreenUtility
                 && (extendedStyle & NativeMethods.WS_EX_LAYERED) == NativeMethods.WS_EX_LAYERED)
             {
                 //Disable if either setting is disabled
-                if (!SettingsState.MouseTransparencyEnabled || !SettingsState.CursorCurrentlyLocked)
+                if (!SettingsState.MouseTransparencyEnabled || !SettingsState.FullscreenAppFocused)
                 {
                     Logger.Info($"Un-setting mouse transparency on {processName}:{windowName}");
                     var result = NativeMethods.SetWindowLong(windowHandle, NativeMethods.GWL_EXSTYLE,
@@ -72,7 +72,7 @@ namespace FullscreenUtility
             else //Not set
             {
                 //Enable if both are set
-                if (SettingsState.MouseTransparencyEnabled && SettingsState.CursorCurrentlyLocked)
+                if (SettingsState.MouseTransparencyEnabled && SettingsState.FullscreenAppFocused)
                 {
                     Logger.Info($"Setting mouse transparency on {processName}:{windowName}");
                     var result = NativeMethods.SetWindowLong(windowHandle, NativeMethods.GWL_EXSTYLE,
