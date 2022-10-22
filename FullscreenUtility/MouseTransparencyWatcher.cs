@@ -25,7 +25,9 @@ namespace FullscreenUtility
             var windowHandle = IntPtr.Zero;
             NativeMethods.EnumWindows(delegate (IntPtr wnd, IntPtr param)
             {
-                if (GetWindowText(wnd) == windowName)
+                var windowText = GetWindowText(wnd);
+                //Logger.Trace(() => $"WindowText: {windowText}");
+                if (windowText == windowName)
                 {
                     windowHandle = wnd;
                     return false;

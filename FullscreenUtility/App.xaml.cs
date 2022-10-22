@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics.Metrics;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using Hardcodet.Wpf.TaskbarNotification;
@@ -13,6 +15,8 @@ namespace FullscreenUtility
     {
 
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+        private static Mutex singleInstanceMutex = new Mutex(true, "{554f2f38-7358-4d9c-8b2b-43ae219d3887}");
 
         private readonly TaskbarIcon _trayIcon;
 
@@ -31,9 +35,25 @@ namespace FullscreenUtility
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            _cursorLockWatcher = new CursorLockWatcher();
-            _mouseTransparencyWatcher = new MouseTransparencyWatcher();
-            base.OnStartup(e);
+
+            if (singleInstanceMutex.WaitOne(TimeSpan.Zero, true))
+            {
+                try
+                {
+                    _cursorLockWatcher = new CursorLockWatcher();
+                    _mouseTransparencyWatcher = new MouseTransparencyWatcher();
+                    base.OnStartup(e);
+                }
+                finally
+                {
+                    singleInstanceMutex.ReleaseMutex();
+                }
+            }
+            else
+            {
+                MessageBox.Show("FullscreenUtility is already running!");
+                Application.Current.Shutdown();
+            }
         }
 
         protected override void OnExit(ExitEventArgs e)
