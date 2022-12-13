@@ -6,8 +6,8 @@
     <Application.Resources>
         <ResourceDictionary>
             <ContextMenu x:Shared="false" x:Key="SysTrayMenu">
-                <MenuItem Header="Turn off Cursor Lock" Click="CursorLockOnClick"/>
-                <MenuItem Header="Turn off Mouse Transparency" Click="MouseTransparencyOnClick"/>
+                <MenuItem Header="Turn ??? Cursor Lock" Click="CursorLockOnClick" Loaded="CursorLockOnLoaded"/>
+                <MenuItem Header="Turn ??? Mouse Transparency" Click="MouseTransparencyOnClick" Loaded="MouseTransparencyOnLoaded"/>
                 <Separator />
                 <MenuItem Header="Exit" Click="ExitOnClick" />
             </ContextMenu>

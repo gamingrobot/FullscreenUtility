@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Metrics;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -16,9 +15,10 @@ namespace FullscreenUtility
 
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-        private static Mutex singleInstanceMutex = new Mutex(true, "{554f2f38-7358-4d9c-8b2b-43ae219d3887}");
+        private static readonly Mutex SingleInstanceMutex = new Mutex(true, "{554f2f38-7358-4d9c-8b2b-43ae219d3887}");
 
         private readonly TaskbarIcon _trayIcon;
+        private readonly Settings _settings;
 
         private CursorLockWatcher _cursorLockWatcher;
         private MouseTransparencyWatcher _mouseTransparencyWatcher;
@@ -29,14 +29,15 @@ namespace FullscreenUtility
 
             _trayIcon = (TaskbarIcon)FindResource("TrayIcon");
 
-            SettingsState.MouseTransparencyEnabled = true;
-            SettingsState.CursorLockEnabled = true;
+            _settings = SettingsFile.ReadSettings();
+            SettingsState.CursorLockEnabled = _settings.CursorLockEnabled;
+            SettingsState.MouseTransparencyEnabled = _settings.MouseTransparencyEnabled;
         }
 
         protected override void OnStartup(StartupEventArgs e)
         {
 
-            if (singleInstanceMutex.WaitOne(TimeSpan.Zero, true))
+            if (SingleInstanceMutex.WaitOne(TimeSpan.Zero, true))
             {
                 try
                 {
@@ -46,7 +47,7 @@ namespace FullscreenUtility
                 }
                 finally
                 {
-                    singleInstanceMutex.ReleaseMutex();
+                    SingleInstanceMutex.ReleaseMutex();
                 }
             }
             else
@@ -58,6 +59,10 @@ namespace FullscreenUtility
 
         protected override void OnExit(ExitEventArgs e)
         {
+            _settings.CursorLockEnabled = SettingsState.CursorLockEnabled;
+            _settings.MouseTransparencyEnabled = SettingsState.MouseTransparencyEnabled;
+            SettingsFile.WriteSettings(_settings);
+
             _trayIcon.Dispose();
             base.OnExit(e);
         }
@@ -69,23 +74,42 @@ namespace FullscreenUtility
 
         private void CursorLockOnClick(object sender, RoutedEventArgs e)
         {
-            var item = (MenuItem) e.OriginalSource;
             SettingsState.CursorLockEnabled = !SettingsState.CursorLockEnabled;
+            UpdateCursorLockText((MenuItem) e.OriginalSource);
+        }
+
+        private void CursorLockOnLoaded(object sender, RoutedEventArgs e)
+        {
+            UpdateCursorLockText((MenuItem)e.OriginalSource);
+        }
+
+        private void UpdateCursorLockText(MenuItem item)
+        {
             item.Header = GetStatusText(SettingsState.CursorLockEnabled, "Cursor Lock");
         }
 
         private void MouseTransparencyOnClick(object sender, RoutedEventArgs e)
         {
-            var item = (MenuItem)e.OriginalSource;
             SettingsState.MouseTransparencyEnabled = !SettingsState.MouseTransparencyEnabled;
+            UpdateMouseTransparencyText((MenuItem)e.OriginalSource);
+        }
+
+        private void MouseTransparencyOnLoaded(object sender, RoutedEventArgs e)
+        {
+            UpdateMouseTransparencyText((MenuItem)e.OriginalSource);
+        }
+
+        private void UpdateMouseTransparencyText(MenuItem item)
+        {
             item.Header = GetStatusText(SettingsState.MouseTransparencyEnabled, "Mouse Transparency");
         }
 
-        private string GetStatusText(bool state, string tail)
+        private static string GetStatusText(bool state, string tail)
         {
             var statusText = state ? "off" : "on";
             return $"Turn {statusText} {tail}";
         }
+
 
 
     }
